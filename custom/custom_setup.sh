@@ -91,7 +91,7 @@ zsh_setup ()
   # Change the default shell to zsh
   chroot /mnt chsh -s /usr/bin/zsh daniel
   # Install oh-my-zsh
-  chroot /mnt sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+  chroot /mnt su - daniel -c "sh -c \"$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\""
 }
 
 language_setup ()
@@ -204,7 +204,7 @@ dotfiles ()
 {
   # Some submodules are private, we'll ask them to create an SSH key 
   ssh_setup=$(zenity --question --text="Would you like to create an SSH key to access private submodules? (If you are not me, you should probably say no).")
-  if [ "$ssh_setup" = "TRUE" ]; then
+  if [ $ssh_setup = 0 ]; then
     # Create a key pair
     chroot /mnt su - daniel -c "ssh-keygen -t rsa -b 4096 -C \"temporary_key\" -f /tmp/temporary_key -N \"\""
 
@@ -218,13 +218,13 @@ dotfiles ()
       \n\nPress OK when you have added the key to your GitHub account."
   fi
   
-  chroot /mnt su - daniel -c "git clone --recurse-submodules git@github.com:danpellegrino/.dotfiles.git /home/daniel/.dotfiles/"
+  chroot /mnt su - daniel -c "git clone --recurse-submodules git@github.com:danpellegrino/.dotfiles.git ~/.dotfiles"
 
   # Run the install script
   chroot /mnt /home/daniel/.dotfiles/install.sh daniel
 
   # Remove the temporary keys if they were created
-  if [ "$ssh_setup" = "TRUE" ]; then
+  if [ $ssh_setup = 0 ]; then
     # Remove the temporary key
     xdg-open https://github.com/settings/keys
     zenity --info --text="We now suggest you remove the temporary SSH key from your GitHub account.\n\n$(cat /tmp/temporary_key.pub) \
