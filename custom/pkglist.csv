@@ -13,6 +13,7 @@ xinit,a display server
 synaptic,a package manager
 alacritty,a terminal emulator
 zsh,a shell
+ssh,a secure shell
 curl,a command line tool
 wget,a command line tool
 git,a version control system
