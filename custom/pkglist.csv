@@ -8,6 +8,8 @@ nvidia-driver,required for nvidia
 vulkan-tools,required for nvidia
 gnome-core,a desktop environment
 gnome-software-plugin-flatpak,a flatpak plugin for gnome software
+xorg,a display server
+xinit,a display server
 synaptic,a package manager
 alacritty,a terminal emulator
 zsh,a shell
