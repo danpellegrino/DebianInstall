@@ -3,7 +3,7 @@
 # custom_setup.sh
  # Author: Daniel Pellegrino
  # Date Created: 12/20/2023
- # Last Modified: 12/20/2023
+ # Last Modified: 1/6/2023
  # Description: This does everything post initial install script to setup it up as my personal system.
 
 main ()
@@ -213,20 +213,52 @@ kernel_parameters ()
 tmux_setup ()
 {
   # Install TPM
-  # You shouldn't install git as root so we need to switch to the user
+  # You shouldn't clone git as root so we need to switch to the user
   chroot /mnt su - daniel
-  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+  chroot /mnt git clone https://github.com/tmux-plugins/tpm /home/daniel/.tmux/plugins/tpm
   chroot /mnt exit
 }
 
 dotfiles ()
 {
-  # Clone the dotfiles repo
-  #chroot /mnt git clone [REPO_URL] /tmp/dotfiles
-  
-  # Copy the dotfiles to the home directory
-  #chroot /mnt cp -r /tmp/dotfiles/. /home/daniel
+  # Switch to the user
+  chroot /mnt su - daniel
+  # Some submodules are private, we'll ask them to create an SSH key 
+  ssh_setup=$(zenity --question --text="Would you like to create an SSH key to access private submodules? (If you are not me, you should probably say no).")
+  if [ "$ssh_setup" = "TRUE" ]; then
+    # Create a key pair
+    chroot /mnt ssh-keygen -t rsa -b 4096 -C "temporary_key" -f /tmp/temporary_key -N ""
 
+    # Add the key to the ssh-agent
+    chroot /mnt eval "$(ssh-agent -s)"
+    chroot /mnt ssh-add /tmp/temporary_key
+
+    # Open the GitHub page to add the key
+    xdg-open https://github.com/settings/keys
+    zenity --info --text="You will now be asked to add the following key to your GitHub account.\n\n$(cat /tmp/temporary_key.pub) \
+      \n\nPress OK when you have added the key to your GitHub account."
+  fi
+  
+  chroot /mnt git clone --recurse-submodules git@github.com:danpellegrino/.dotfiles.git /home/daniel/.dotfiles/
+
+  # Go back to root
+  chroot /mnt exit
+
+  # Run the install script
+  chroot /mnt /home/daniel/.dotfiles/install.sh daniel
+
+  # Remove the temporary keys if they were created
+  if [ "$ssh_setup" = "TRUE" ]; then
+    # Remove the temporary key
+    xdg-open https://github.com/settings/keys
+    zenity --info --text="We now suggest you remove the temporary SSH key from your GitHub account.\n\n$(cat /tmp/temporary_key.pub) \
+    \n\nPress OK when you have removed the key from your GitHub account."
+    chroot /mnt su - daniel
+    chroot /mnt ssh-add -D
+    chroot /mnt rm /tmp/temporary_key*
+    chroot /mnt exit
+  fi
+  unset ssh_setup
 }
 
 # Functions
