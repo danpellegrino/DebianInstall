@@ -1,11 +1,3 @@
-firmware-iwlwifi,required for my wifi card
-sbsigntool,required for secure boot
-mokutil,required for secure boot
-nvidia-settings,required for nvidia
-nvidia-kernel-dkms,required for nvidia
-nvidia-cuda-mps,required for nvidia
-nvidia-driver,required for nvidia
-vulkan-tools,required for nvidia
 gnome-core,a desktop environment
 gnome-software-plugin-flatpak,a flatpak plugin for gnome software
 synaptic,a package manager

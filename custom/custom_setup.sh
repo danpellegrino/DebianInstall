@@ -25,19 +25,19 @@ main ()
 
   zsh_setup
 
-  language_setup
+# language_setup
 
-  wayland_setup
+# wayland_setup
 
   auto_login
 
-  kernel_parameters
+# kernel_parameters
 
   tmux_setup
 
   dotfiles
 
-  secureboot
+# secureboot
 }
 
 install_packages ()
