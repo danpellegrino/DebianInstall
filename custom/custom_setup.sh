@@ -59,22 +59,16 @@ flatpak_setup ()
   # Add the flathub repo
   chroot /mnt flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
-  # Switch to the user
-  chroot /mnt su - daniel
-
   # Update flatpak
-  chroot /mnt flatpak update -y
+  chroot /mnt su - daniel -c "flatpak update -y"
 
   # Install the following flatpak packages
   while read -r line; do
     # The first field is the package name and the second field is the description
     # The description is ignored
     package=$(echo "$line" | cut -d , -f 1)
-    chroot /mnt flatpak install -y flathub "$package"
+    chroot /mnt su - daniel -c "flatpak install -y flathub \"$package\""
   done < custom/flatpaklist.csv
-
-  # Go back to root
-  chroot /mnt exit
 }
 
 font_setup ()
@@ -114,18 +108,13 @@ language_setup ()
   # nodejs
 
   # nodejs should not be installed as root so we need to switch to the user
-  chroot /mnt su - daniel
-  chroot /mnt mkdir -p /etc/apt/keyrings
+  chroot /mnt su - daniel -c "mkdir -p /etc/apt/keyrings"
   # You'll need to run the following command as root
-  chroot /mnt exit
   chroot /mnt curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
 
-  # Go back to the user
-  chroot /mnt su - daniel
   NODE_MAJOR=20
   export NODE_MAJOR
-  chroot /mnt echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
-  chroot /mnt exit
+  chroot /mnt su - daniel -c "echo \"deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main\" | sudo tee /etc/apt/sources.list.d/nodesource.list"
   chroot /mnt apt-get install nodejs -y
 
   # javascript
@@ -135,23 +124,17 @@ language_setup ()
   # 1. eslint
   
   # You shouldn't install npm as root so we need to switch to the user
-  chroot /mnt su - daniel
-  chroot /mnt npm install -g eslint
-  chroot /mnt exit
+  chroot /mnt su - daniel -c "npm install -g eslint"
 
   # 2. prettier
   
   # You shouldn't install npm as root so we need to switch to the user
-  chroot /mnt su - daniel
-  chroot /mnt npm install -g prettier
-  chroot /mnt exit
+  chroot /mnt su - daniel -c "npm install -g prettier"
 
   # 3. typescript
 
   # You shouldn't install npm as root so we need to switch to the user
-  chroot /mnt su - daniel
-  chroot /mnt npm install -g typescript
-  chroot /mnt exit
+  chroot /mnt su - daniel -c "npm install -g typescript"
 
   # c\c++
   # java
@@ -214,24 +197,20 @@ tmux_setup ()
 {
   # Install TPM
   # You shouldn't clone git as root so we need to switch to the user
-  chroot /mnt su - daniel
-  chroot /mnt git clone https://github.com/tmux-plugins/tpm /home/daniel/.tmux/plugins/tpm
-  chroot /mnt exit
+  chroot /mnt su - daniel -c "git clone https://github.com/tmux-plugins/tpm /home/daniel/.tmux/plugins/tpm"
 }
 
 dotfiles ()
 {
-  # Switch to the user
-  chroot /mnt su - daniel
   # Some submodules are private, we'll ask them to create an SSH key 
   ssh_setup=$(zenity --question --text="Would you like to create an SSH key to access private submodules? (If you are not me, you should probably say no).")
   if [ "$ssh_setup" = "TRUE" ]; then
     # Create a key pair
-    chroot /mnt ssh-keygen -t rsa -b 4096 -C "temporary_key" -f /tmp/temporary_key -N ""
+    chroot /mnt su - daniel -c "ssh-keygen -t rsa -b 4096 -C \"temporary_key\" -f /tmp/temporary_key -N \"\""
 
     # Add the key to the ssh-agent
-    chroot /mnt eval "$(ssh-agent -s)"
-    chroot /mnt ssh-add /tmp/temporary_key
+    chroot /mnt su - daniel -c "eval \"$(ssh-agent -s)\""
+    chroot /mnt su - daniel -c "ssh-add /tmp/temporary_key"
 
     # Open the GitHub page to add the key
     xdg-open https://github.com/settings/keys
@@ -239,10 +218,7 @@ dotfiles ()
       \n\nPress OK when you have added the key to your GitHub account."
   fi
   
-  chroot /mnt git clone --recurse-submodules git@github.com:danpellegrino/.dotfiles.git /home/daniel/.dotfiles/
-
-  # Go back to root
-  chroot /mnt exit
+  chroot /mnt su - daniel -c "git clone --recurse-submodules git@github.com:danpellegrino/.dotfiles.git /home/daniel/.dotfiles/"
 
   # Run the install script
   chroot /mnt /home/daniel/.dotfiles/install.sh daniel
@@ -253,10 +229,8 @@ dotfiles ()
     xdg-open https://github.com/settings/keys
     zenity --info --text="We now suggest you remove the temporary SSH key from your GitHub account.\n\n$(cat /tmp/temporary_key.pub) \
     \n\nPress OK when you have removed the key from your GitHub account."
-    chroot /mnt su - daniel
-    chroot /mnt ssh-add -D
-    chroot /mnt rm /tmp/temporary_key*
-    chroot /mnt exit
+    chroot /mnt su - daniel -c "ssh-add -D"
+    chroot /mnt su - daniel -c "rm /tmp/temporary_key*"
   fi
   unset ssh_setup
 }
