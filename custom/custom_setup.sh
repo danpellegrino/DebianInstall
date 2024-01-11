@@ -214,7 +214,8 @@ dotfiles ()
     chroot /mnt su - daniel -c "ssh-add /tmp/temporary_key"
 
     # Open the GitHub page to add the key
-    xdg-open https://github.com/settings/keys
+    sudo -u "$SUDO_USER" xdg-open https://github.com/settings/keys &
+
     zenity --info --text="You will now be asked to add the following key to your GitHub account.\n\n$(cat /mnt/tmp/temporary_key.pub) \
       \n\nPress OK when you have added the key to your GitHub account."
 
@@ -232,7 +233,8 @@ dotfiles ()
   # Remove the temporary keys if they were created
   if [ $ssh_setup = 0 ]; then
     # Remove the temporary key
-    xdg-open https://github.com/settings/keys
+    sudo -u "$SUDO_USER" xdg-open https://github.com/settings/keys &
+
     zenity --info --text="We now suggest you remove the temporary SSH key from your GitHub account.\n\n$(cat /mnt/tmp/temporary_key.pub) \
     \n\nPress OK when you have removed the key from your GitHub account."
     chroot /mnt su - daniel -c "ssh-add -D"
