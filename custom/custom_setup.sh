@@ -207,24 +207,27 @@ dotfiles ()
   if [ $? = 0 ]; then
     ssh_setup=0
     # Create a key pair
-    chroot /mnt su - daniel -c "ssh-keygen -t rsa -b 4096 -C \"temporary_key\" -f /tmp/temporary_key -N \"\""
+    ssh-keygen -t rsa -b 4096 -C "temporary_key" -f ~/.ssh/temporary_key -N ""
 
     # Add the key to the ssh-agent
-    chroot /mnt su - daniel -c "eval \"$(ssh-agent -s)\""
-    chroot /mnt su - daniel -c "ssh-add /tmp/temporary_key"
+    eval "$(ssh-agent -s)"
+    ssh-add ~/.ssh/temporary_key
 
     # Open the GitHub page to add the key
     sudo -u "$SUDO_USER" xdg-open https://github.com/settings/keys &
 
-    zenity --info --text="You will now be asked to add the following key to your GitHub account.\n\n$(cat /mnt/tmp/temporary_key.pub) \
+    # Copy the key to the clipboard
+    xclip -sel clip < ~/.ssh/temporary_key.pub
+
+    zenity --info --text="You will now be asked to add the following key to your GitHub account.\n\n$(cat ~/.ssh/temporary_key.pub) \
       \n\nPress OK when you have added the key to your GitHub account."
 
     # Clone the repo
-    chroot /mnt su - daniel -c "git clone --recurse-submodules git@github.com:danpellegrino/.dotfiles.git ~/.dotfiles"
+    git clone --recurse-submodules git@github.com:danpellegrino/.dotfiles.git /mnt/home/daniel/.dotfiles
   else
     ssh_setup=1
     # Clone the repo
-    chroot /mnt su - daniel -c "git clone https://github.com/danpellegrino/BashScripts.git"
+    git clone https://github.com/danpellegrino/.dotfiles.git /mnt/home/daniel/.dotfiles
   fi 
 
   # Run the install script
@@ -235,10 +238,10 @@ dotfiles ()
     # Remove the temporary key
     sudo -u "$SUDO_USER" xdg-open https://github.com/settings/keys &
 
-    zenity --info --text="We now suggest you remove the temporary SSH key from your GitHub account.\n\n$(cat /mnt/tmp/temporary_key.pub) \
+    zenity --info --text="We now suggest you remove the temporary SSH key from your GitHub account.\n\n$(cat ~/.ssh/temporary_key.pub) \
     \n\nPress OK when you have removed the key from your GitHub account."
-    chroot /mnt su - daniel -c "ssh-add -D"
-    chroot /mnt su - daniel -c "rm /tmp/temporary_key*"
+    ssh-add -D
+    rm ~/.ssh/temporary_key*
   fi
   unset ssh_setup
 }
