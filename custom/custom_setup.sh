@@ -3,7 +3,7 @@
 # custom_setup.sh
  # Author: Daniel Pellegrino
  # Date Created: 12/20/2023
- # Last Modified: 1/6/2023
+ # Last Modified: 1/11/2023
  # Description: This does everything post initial install script to setup it up as my personal system.
 
 main ()
@@ -90,8 +90,6 @@ zsh_setup ()
 {
   # Change the default shell to zsh
   chroot /mnt chsh -s /usr/bin/zsh daniel
-  # Install oh-my-zsh
-  chroot /mnt su - daniel -c "sh -c \"$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\""
 }
 
 language_setup ()
