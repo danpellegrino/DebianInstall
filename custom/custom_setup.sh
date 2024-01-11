@@ -223,6 +223,7 @@ dotfiles ()
       \n\nPress OK when you have added the key to your GitHub account."
 
     # Clone the repo
+    ssh -o StrictHostKeyChecking=no git@github.com:danpellegrino/.dotfiles.git
     git clone --recurse-submodules git@github.com:danpellegrino/.dotfiles.git /mnt/home/daniel/.dotfiles
   else
     ssh_setup=1
