@@ -41,3 +41,5 @@ xz-utils,a compression tool
 plymouth-themes,a boot splash screen
 dbus-x11,a dbus manager
 zathura,a pdf viewer
+newsboat,a rss reader
+mpv,a media player
