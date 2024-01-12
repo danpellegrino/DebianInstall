@@ -21,6 +21,8 @@ main ()
 
   flatpak_setup
 
+  build_neovim
+
   font_setup
 
   zsh_setup
@@ -32,8 +34,6 @@ main ()
   auto_login
 
 # kernel_parameters
-
-  tmux_setup
 
   dotfiles
 
@@ -69,6 +69,27 @@ flatpak_setup ()
     package=$(echo "$line" | cut -d , -f 1)
     chroot /mnt su - daniel -c "flatpak install -y flathub \"$package\""
   done < custom/flatpaklist.csv
+}
+
+build_neovim ()
+{
+  # Install the dependencies
+  chroot /mnt apt install ninja-build gettext cmake unzip curl -y 
+
+  # Clone the repo
+  git clone https://github.com/neovim/neovim /mnt/opt/neovim
+
+  # Give the user permission to the neovim directory
+  chroot /mnt chown -R daniel:daniel /opt/neovim
+
+  # Build neovim
+  chroot /mnt su - daniel -c "make CMAKE_BUILD_TYPE=RelWithDebInfo -C /opt/neovim"
+
+  # Install neovim
+  chroot /mnt su - daniel -c "cd /opt/neovim/build && cpack -G DEB"
+
+  # Install the neovim package
+  chroot /mnt dpkg -i /opt/neovim/build/nvim-linux64.deb
 }
 
 font_setup ()
@@ -177,8 +198,8 @@ wayland_setup ()
 auto_login ()
 {
   # Enable auto login
-  sed -i -e 's/#  AutomaticLoginEnable = true/AutomaticLoginEnable = true/' /mnt/etc/gdm3/custom.conf
-  sed -i -e 's/#  AutomaticLogin = user1/AutomaticLogin = daniel/' /mnt/etc/gdm3/custom.conf
+  sed -i -e 's/#  AutomaticLoginEnable = true/AutomaticLoginEnable = true/' /mnt/etc/gdm3/daemon.conf
+  sed -i -e 's/#  AutomaticLogin = user1/AutomaticLogin = daniel/' /mnt/etc/gdm3/daemon.conf
 }
 
 kernel_parameters ()
@@ -189,12 +210,6 @@ kernel_parameters ()
 
   # Update GRUB
   chroot /mnt update-grub
-}
-
-tmux_setup ()
-{
-  # Install TPM
- chroot /mnt su - daniel -c "git clone https://github.com/tmux-plugins/tpm /home/daniel/.tmux/plugins/tpm"
 }
 
 dotfiles ()
@@ -227,6 +242,9 @@ dotfiles ()
     # Clone the repo
     git clone https://github.com/danpellegrino/.dotfiles.git /mnt/home/daniel/.dotfiles
   fi 
+
+  # Give the user permission to the .dotfiles directory
+  chroot /mnt chown -R daniel:daniel /home/daniel/.dotfiles
 
   # Run the install script
   chroot /mnt /home/daniel/.dotfiles/install.sh daniel
