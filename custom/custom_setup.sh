@@ -225,14 +225,12 @@ dotfiles ()
     eval "$(ssh-agent -s)"
     ssh-add ~/.ssh/temporary_key
 
-    # Open the GitHub page to add the key
-    sudo -u "$SUDO_USER" xdg-open https://github.com/settings/keys &
-
     # Copy the key to the clipboard
     xclip -sel clip < ~/.ssh/temporary_key.pub
 
-    zenity --info --text="You will now be asked to add the following key to your GitHub account.\n\n$(cat ~/.ssh/temporary_key.pub) \
-      \n\nPress OK when you have added the key to your GitHub account."
+    zenity --info --text="You will now be asked to add the following key to your GitHub account.\n\n \
+      The following SSH Key has been added to your clipboard:\n\n$(cat ~/.ssh/temporary_key.pub)\n\n \
+      Press OK when you have added the key to your GitHub account."
 
     # Clone the repo
     ssh -o StrictHostKeyChecking=no git@github.com
@@ -251,11 +249,8 @@ dotfiles ()
 
   # Remove the temporary keys if they were created
   if [ $ssh_setup = 0 ]; then
-    # Remove the temporary key
-    sudo -u "$SUDO_USER" xdg-open https://github.com/settings/keys &
-
-    zenity --info --text="We now suggest you remove the temporary SSH key from your GitHub account.\n\n$(cat ~/.ssh/temporary_key.pub) \
-    \n\nPress OK when you have removed the key from your GitHub account."
+    zenity --info --text="We now suggest you remove the temporary SSH key from your GitHub account.\n\n \
+      Press OK when you have removed the key from your GitHub account."
     ssh-add -D
     rm ~/.ssh/temporary_key*
   fi
