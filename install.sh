@@ -3,7 +3,7 @@
 # install.sh
  # Author: Daniel Pellegrino
  # Date Created: 12/18/2023
- # Last Modified: 12/20/2023
+ # Last Modified: 1/11/2023
  # Description: This script will install debian bookworm or trixie using debootstrap.
 
 main ()
@@ -55,7 +55,13 @@ main ()
 
   install_packages
 
+  setup_zram 
+
   extra_packages_prompt
+
+  setup_snapshots
+
+  unmount_base_system
 
   unset RUN
 }
@@ -416,15 +422,82 @@ EOF
   fi
 }
 
+setup_zram ()
+{
+  # Install zram-tools
+  chroot /mnt apt update && chroot /mnt apt install zram-tools -y
+
+  # Specify the amount of zram to use
+  sed -i -e 's/#PERCENT=50/PERCENT=50/' /mnt/etc/default/zramswap
+
+  # Restart the zramswap service
+  chroot /mnt systemctl restart zramswap.service
+}
+
 extra_packages_prompt ()
 {
   zenity --question --text="The base system has been installed. Anything further is customized towards my setup. Do you want to continue?"
   if [ "$?" -eq 0 ]; then
     source custom/custom_setup.sh
-    unmount_base_system
-  else 
-    unmount_base_system
   fi
+}
+
+setup_snapshots ()
+{
+  # Install snapper-gui, git, and inotify-tools
+  chroot /mnt apt update && chroot /mnt apt install snapper-gui git inotify-tools -y
+
+  # Enable snapper
+  chroot /mnt umount /.snapshots
+  chroot /mnt rm -rf /.snapshots
+
+  chroot /mnt snapper --no-dbus -c root create-config /
+  chroot /mnt snapper --no-dbus -c root set-config "ALLOW_GROUPS=sudo"
+  chroot /mnt snapper --no-dbus -c root set-config "SYNC_ACL=yes"
+
+  chroot /mnt snapper --no-dbus -c home create-config /home
+  chroot /mnt snapper --no-dbus -c home set-config "ALLOW_GROUPS=sudo"
+  chroot /mnt snapper --no-dbus -c home set-config "SYNC_ACL=yes"
+
+  sed -i -e 's/TIMELINE_LIMIT_HOURLY="10"/TIMELINE_LIMIT_HOURLY="5"/' /mnt/etc/snapper/configs/root
+  sed -i -e 's/TIMELINE_LIMIT_DAILY="10"/TIMELINE_LIMIT_DAILY="7"/' /mnt/etc/snapper/configs/root
+  sed -i -e 's/TIMELINE_LIMIT_MONTHLY="10"/TIMELINE_LIMIT_MONTHLY="0"/' /mnt/etc/snapper/configs/root
+  sed -i -e 's/TIMELINE_LIMIT_YEARLY="10"/TIMELINE_LIMIT_YEARLY="0"/' /mnt/etc/snapper/configs/root
+
+  sed -i -e 's/TIMELINE_LIMIT_HOURLY="10"/TIMELINE_LIMIT_HOURLY="5"/' /mnt/etc/snapper/configs/home
+  sed -i -e 's/TIMELINE_LIMIT_DAILY="10"/TIMELINE_LIMIT_DAILY="7"/' /mnt/etc/snapper/configs/home
+  sed -i -e 's/TIMELINE_LIMIT_MONTHLY="10"/TIMELINE_LIMIT_MONTHLY="0"/' /mnt/etc/snapper/configs/home
+  sed -i -e 's/TIMELINE_LIMIT_YEARLY="10"/TIMELINE_LIMIT_YEARLY="0"/' /mnt/etc/snapper/configs/home
+
+  chroot /mnt systemctl enable snapper-timeline.timer
+  chroot /mnt systemctl enable snapper-cleanup.timer
+  chroot /mnt systemctl enable snapper-boot.timer
+
+  chroot /mnt btrfs su del /.snapshots
+  chroot /mnt mkdir /.snapshots
+
+  chroot /mnt mount -av
+
+  git clone https://github.com/Antynea/grub-btrfs /mnt/opt/grub-btrfs
+  
+  chroot /mnt apt-get install bzip2 -y
+
+  chroot /mnt su - root -c "cd /opt/grub-btrfs && make install"
+
+  chroot /mnt update-grub
+
+  chroot /mnt systemctl enable grub-btrfsd
+
+  zenity --question --text="Do you want to create an initial snapshot?\nThis will make the initial root snapshot the default subvolume."
+  if [ "$?" -eq 0 ]; then
+    chroot /mnt snapper --no-dbus -c root create --description "Initial root snapshot"
+    chroot /mnt snapper --no-dbus -c home create --description "Initial home snapshot"
+
+    ID=$(chroot /mnt btrfs inspect-internal rootid /.snapshots/1/snapshot)
+    chroot /mnt btrfs su set-def "$ID" /
+  fi
+
+  chroot /mnt update-grub
 }
 
 unmount_base_system ()

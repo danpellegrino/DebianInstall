@@ -36,7 +36,9 @@ main ()
 # kernel_parameters
 
   dotfiles
-
+  
+  gnome_extra_setup
+  
 # secureboot
 }
 
@@ -98,13 +100,16 @@ font_setup ()
 
   # Get the FiraCode Nerd Font
   wget -P /mnt/tmp https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/FiraCode.tar.xz
+  wget -P /mnt/tmp https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/FiraMono.tar.xz
   mkdir -p /mnt/usr/share/fonts/truetype/firacode
+  mkdir -p /mnt/usr/share/fonts/truetype/firamono
 
   # Extract the tarball
   tar -xf /mnt/tmp/FiraCode.tar.xz -C /mnt/usr/share/fonts/truetype/firacode
+  tar -xf /mnt/tmp/FiraMono.tar.xz -C /mnt/usr/share/fonts/truetype/firamono
 
   # Refresh the font cache
-  fc-cache -f -v
+  chroot /mnt fc-cache -f -v
 }
 
 zsh_setup ()
@@ -206,7 +211,7 @@ kernel_parameters ()
 {
   # Change GRUB to exlude the nouveau driver
   # Then set the NVIDIA-drm.modeset=1 kernel parameter (this is to get wayland to work)
-  sed -i -e 's/GRUB_CMDLINE_LINUX_DEFAULT="quiet"/GRUB_CMDLINE_LINUX_DEFAULT="quiet nouveau.modeset=0 nvidia-drm.modeset=1"/' /mnt/etc/default/grub
+  sed -i -e 's/GRUB_CMDLINE_LINUX_DEFAULT="quiet"/GRUB_CMDLINE_LINUX_DEFAULT="quiet loglevel=0 splash nouveau.modeset=0 nvidia-drm.modeset=1"/' /mnt/etc/default/grub
 
   # Update GRUB
   chroot /mnt update-grub
@@ -257,7 +262,24 @@ dotfiles ()
   unset ssh_setup
 }
 
-# Functions
+gnome_extra_setup ()
+{
+  # Set GNOME to use dark mode
+  chroot /mnt su - daniel -c "gsettings set org.gnome.desktop.interface color-scheme prefer-dark"
+
+  # Set GNOME legacy applications to use adwaita-dark
+  chroot /mnt su - daniel -c "gsettings set org.gnome.desktop.interface gtk-theme \"Adwaita-dark\""
+
+  # Set GNOME applications fonts
+  chroot /mnt su - daniel -c "gsettings set org.gnome.desktop.interface font-name \"Noto Sans Regular 10\""
+  chroot /mnt su - daniel -c "gsettings set org.gnome.desktop.interface document-font-name \"Noto Sans Regular 11\""
+  chroot /mnt su - daniel -c "gsettings set org.gnome.desktop.interface monospace-font-name \"FiraMono Nerd Font Regular 11\""
+  chroot /mnt su - daniel -c "gsettings set org.gnome.desktop.wm.preferences titlebar-font \"Roboto Bold 11\""
+
+  # Set the titlebar buttons
+  chroot /mnt su - daniel -c "gsettings set org.gnome.desktop.wm.preferences button-layout \"appmenu:minimize,maximize,close\""
+}
+
 secureboot ()
 {
   # Prompt the user that Secure Boot keys will be created
