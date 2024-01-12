@@ -22,6 +22,8 @@ main ()
   flatpak_setup
 
   build_neovim
+  
+  install_librewolf
 
   font_setup
 
@@ -92,6 +94,47 @@ build_neovim ()
 
   # Install the neovim package
   chroot /mnt dpkg -i /opt/neovim/build/nvim-linux64.deb
+}
+
+install_librewolf ()
+{
+  # Download the latest release (stable)
+  if [ "$DEBIAN_TARGET" = "bookworm" ]; then
+    chroot /mnt apt install -y wget gnupg lsb-release apt-transport-https ca-certificates
+    chroot /mnt su - root -c "wget -O- https://deb.librewolf.net/keyring.gpg | sudo gpg --dearmor -o /usr/share/keyrings/librewolf.gpg"
+
+    chroot /mnt su - root -c "tee /etc/apt/sources.list.d/librewolf.sources << EOF > /dev/null
+Types: deb
+URIs: https://deb.librewolf.net
+Suites: bookworm
+Components: main
+Architectures: amd64
+Signed-By: /usr/share/keyrings/librewolf.gpg
+EOF"
+
+    chroot /mnt apt update
+
+    chroot /mnt apt install librewolf -y
+  else
+    # Unstable
+    if [ ! -d /mnt/etc/apt/keyrings ]; then
+      mkdir -p /mnt/etc/apt/keyrings
+      chmod 755 /mnt/etc/apt/keyrings
+
+      chroot /mnt su - root -c "wget -O- https://download.opensuse.org/repositories/home:/bgstack15:/aftermozilla/Debian_Unstable/Release.key | gpg --dearmor -o /etc/apt/keyrings/home_bgstack15_aftermozilla.gpg"
+
+      chroot /mnt su - root -c "tee /etc/apt/sources.list.d/home_bgstack15_aftermozilla.sources << EOF > /dev/null
+Types: deb
+URIs: https://download.opensuse.org/repositories/home:/bgstack15:/aftermozilla/Debian_Unstable/
+Suites: /
+Signed-By: /etc/apt/keyrings/home_bgstack15_aftermozilla.gpg
+EOF"
+
+      chroot /mnt apt update
+
+      chroot /mnt apt install librewolf -y
+    fi
+  fi
 }
 
 font_setup ()
