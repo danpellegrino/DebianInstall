@@ -26,3 +26,4 @@ xbacklight,a backlight manager
 xinput,a input device manager
 xserver-xorg-input-libinput,a input device manager
 flameshot,a screenshot tool
+tmux,a terminal multiplexer

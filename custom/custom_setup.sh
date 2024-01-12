@@ -194,11 +194,7 @@ kernel_parameters ()
 tmux_setup ()
 {
   # Install TPM
-  # Check if TPM is not installed
-  if [ ! -d /mnt/home/daniel/.tmux/plugins/tpm ]; then
-   chroot /mnt su - daniel -c "git clone https://github.com/tmux-plugins/tpm /home/daniel/.tmux/plugins/tpm"
-   chroot /mnt su - daniel -c "/home/daniel/.tmux/plugins/tpm/bin/install_plugins"
-  fi
+ chroot /mnt su - daniel -c "git clone https://github.com/tmux-plugins/tpm /home/daniel/.tmux/plugins/tpm"
 }
 
 dotfiles ()
