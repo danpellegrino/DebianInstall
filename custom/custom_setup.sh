@@ -111,10 +111,6 @@ Components: main
 Architectures: amd64
 Signed-By: /usr/share/keyrings/librewolf.gpg
 EOF"
-
-    chroot /mnt apt update
-
-    chroot /mnt apt install librewolf -y
   else
     # Unstable
     if [ ! -d /mnt/etc/apt/keyrings ]; then
@@ -129,12 +125,12 @@ URIs: https://download.opensuse.org/repositories/home:/bgstack15:/aftermozilla/D
 Suites: /
 Signed-By: /etc/apt/keyrings/home_bgstack15_aftermozilla.gpg
 EOF"
-
-      chroot /mnt apt update
-
-      chroot /mnt apt install librewolf -y
     fi
   fi
+
+  chroot /mnt apt update
+
+  chroot /mnt apt install librewolf -y
 }
 
 font_setup ()
