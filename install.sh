@@ -3,7 +3,7 @@
 # install.sh
  # Author: Daniel Pellegrino
  # Date Created: 12/18/2023
- # Last Modified: 12/20/2023
+ # Last Modified: 1/11/2023
  # Description: This script will install debian bookworm or trixie using debootstrap.
 
 main ()
@@ -54,6 +54,8 @@ main ()
   setup_user
 
   install_packages
+
+  setup_zram
 
   extra_packages_prompt
 
@@ -414,6 +416,18 @@ EOF
   if [ "$DEBIAN_TARGET" = "trixie" ]; then
     chroot /mnt systemctl disable networking.service
   fi
+}
+
+setup_zram ()
+{
+  # Install zram-tools
+  chroot /mnt apt update && chroot /mnt apt install zram-tools -y
+
+  # Specify the amount of zram to use
+  sed -i -e 's/#PERCENT=50/PERCENT=50/' /mnt/etc/default/zramswap
+
+  # Restart the zramswap service
+  chroot /mnt systemctl restart zramswap.service
 }
 
 extra_packages_prompt ()
