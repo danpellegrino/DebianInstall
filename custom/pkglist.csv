@@ -38,3 +38,4 @@ tmux,a terminal multiplexer
 fonts-noto,a font package
 fonts-roboto,a font package
 xz-utils,a compression tool
+plymouth-themes,a boot splash screen
