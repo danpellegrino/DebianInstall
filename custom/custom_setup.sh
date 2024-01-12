@@ -243,6 +243,9 @@ dotfiles ()
     git clone https://github.com/danpellegrino/.dotfiles.git /mnt/home/daniel/.dotfiles
   fi 
 
+  # Give the user permission to the .dotfiles directory
+  chroot /mnt chown -R daniel:daniel /home/daniel/.dotfiles
+
   # Run the install script
   chroot /mnt /home/daniel/.dotfiles/install.sh daniel
 
