@@ -33,7 +33,7 @@ main ()
 
   auto_login
 
-# kernel_parameters
+  kernel_parameters
 
   dotfiles
   
@@ -211,7 +211,7 @@ kernel_parameters ()
 {
   # Change GRUB to exlude the nouveau driver
   # Then set the NVIDIA-drm.modeset=1 kernel parameter (this is to get wayland to work)
-  sed -i -e 's/GRUB_CMDLINE_LINUX_DEFAULT="quiet"/GRUB_CMDLINE_LINUX_DEFAULT="quiet loglevel=0 splash nouveau.modeset=0 nvidia-drm.modeset=1"/' /mnt/etc/default/grub
+  sed -i -e 's/GRUB_CMDLINE_LINUX_DEFAULT="quiet"/GRUB_CMDLINE_LINUX_DEFAULT="quiet loglevel=0 splash"/' /mnt/etc/default/grub
 
   # Update GRUB
   chroot /mnt update-grub
