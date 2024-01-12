@@ -31,3 +31,4 @@ fonts-noto,a font package
 fonts-roboto,a font package
 xz-utils,a compression tool
 plymouth-themes,a boot splash screen
+dbus-x11,a dbus manager
