@@ -265,19 +265,19 @@ dotfiles ()
 gnome_extra_setup ()
 {
   # Set GNOME to use dark mode
-  chroot /mnt su - daniel -c "gsettings set org.gnome.desktop.interface color-scheme prefer-dark"
+  chroot /mnt su - daniel -c "dbus-launch --exit-with-session gsettings set org.gnome.desktop.interface color-scheme prefer-dark"
 
   # Set GNOME legacy applications to use adwaita-dark
-  chroot /mnt su - daniel -c "gsettings set org.gnome.desktop.interface gtk-theme \"Adwaita-dark\""
+  chroot /mnt su - daniel -c "dbus-launch --exit-with-session gsettings set org.gnome.desktop.interface gtk-theme \"Adwaita-dark\""
 
   # Set GNOME applications fonts
-  chroot /mnt su - daniel -c "gsettings set org.gnome.desktop.interface font-name \"Noto Sans Regular 10\""
-  chroot /mnt su - daniel -c "gsettings set org.gnome.desktop.interface document-font-name \"Noto Sans Regular 11\""
-  chroot /mnt su - daniel -c "gsettings set org.gnome.desktop.interface monospace-font-name \"FiraMono Nerd Font Regular 11\""
-  chroot /mnt su - daniel -c "gsettings set org.gnome.desktop.wm.preferences titlebar-font \"Roboto Bold 11\""
+  chroot /mnt su - daniel -c "dbus-launch --exit-with-session gsettings set org.gnome.desktop.interface font-name \"Noto Sans Regular 10\""
+  chroot /mnt su - daniel -c "dbus-launch --exit-with-session gsettings set org.gnome.desktop.interface document-font-name \"Noto Sans Regular 11\""
+  chroot /mnt su - daniel -c "dbus-launch --exit-with-session gsettings set org.gnome.desktop.interface monospace-font-name \"FiraMono Nerd Font Regular 11\""
+  chroot /mnt su - daniel -c "dbus-launch --exit-with-session gsettings set org.gnome.desktop.wm.preferences titlebar-font \"Roboto Bold 11\""
 
   # Set the titlebar buttons
-  chroot /mnt su - daniel -c "gsettings set org.gnome.desktop.wm.preferences button-layout \"appmenu:minimize,maximize,close\""
+  chroot /mnt su - daniel -c "dbus-launch --exit-with-session gsettings set org.gnome.desktop.wm.preferences button-layout \"appmenu:minimize,maximize,close\""
 }
 
 secureboot ()
