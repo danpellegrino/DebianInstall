@@ -21,6 +21,8 @@ main ()
 
   flatpak_setup
 
+  build_neovim
+
   font_setup
 
   zsh_setup
@@ -67,6 +69,27 @@ flatpak_setup ()
     package=$(echo "$line" | cut -d , -f 1)
     chroot /mnt su - daniel -c "flatpak install -y flathub \"$package\""
   done < custom/flatpaklist.csv
+}
+
+build_neovim ()
+{
+  # Install the dependencies
+  chroot /mnt apt install ninja-build gettext cmake unzip curl -y 
+
+  # Clone the repo
+  git clone https://github.com/neovim/neovim /mnt/opt/neovim
+
+  # Give the user permission to the neovim directory
+  chroot /mnt chown -R daniel:daniel /opt/neovim
+
+  # Build neovim
+  chroot /mnt su - daniel -c "make CMAKE_BUILD_TYPE=RelWithDebInfo -C /opt/neovim"
+
+  # Install neovim
+  chroot /mnt su - daniel -c "cd /opt/neovim/build && cpack -G DEB"
+
+  # Install the neovim package
+  chroot /mnt dpkg -i /opt/neovim/build/nvim-linux64.deb
 }
 
 font_setup ()
