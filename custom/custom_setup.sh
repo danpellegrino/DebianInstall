@@ -33,8 +33,6 @@ main ()
 
   kernel_parameters
 
-  tmux_setup
-
   dotfiles
 
   secureboot
@@ -177,8 +175,8 @@ wayland_setup ()
 auto_login ()
 {
   # Enable auto login
-  sed -i -e 's/#  AutomaticLoginEnable = true/AutomaticLoginEnable = true/' /mnt/etc/gdm3/custom.conf
-  sed -i -e 's/#  AutomaticLogin = user1/AutomaticLogin = daniel/' /mnt/etc/gdm3/custom.conf
+  sed -i -e 's/#  AutomaticLoginEnable = true/AutomaticLoginEnable = true/' /mnt/etc/gdm3/daemon.conf
+  sed -i -e 's/#  AutomaticLogin = user1/AutomaticLogin = daniel/' /mnt/etc/gdm3/daemon.conf
 }
 
 kernel_parameters ()
@@ -189,12 +187,6 @@ kernel_parameters ()
 
   # Update GRUB
   chroot /mnt update-grub
-}
-
-tmux_setup ()
-{
-  # Install TPM
- chroot /mnt su - daniel -c "git clone https://github.com/tmux-plugins/tpm /home/daniel/.tmux/plugins/tpm"
 }
 
 dotfiles ()
